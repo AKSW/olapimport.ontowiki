@@ -1,0 +1,201 @@
+<div class="messagebox" style=" border:1px solid #B22222; margin-top:10px;">
+	<div class="toolbar">
+		<a class="button submit" id="preview">
+			<img src="../ontowiki/extensions/themes/silverblue/images/east-mini.png">
+			<span>&nbsp;Preview</span>
+		</a>
+		<a class="button submit" id="extract">
+			<img src="../ontowiki/extensions/themes/silverblue/images/icon-go2.png">
+			<span>&nbsp;Extract Triples</span>
+		</a>
+		<a class="button reset" id="reset">
+			<img src="../ontowiki/extensions/themes/silverblue/images/icon-reset.png">
+			<span>&nbsp;Cancel</span>
+		</a>
+	</div>
+	<div>
+		<a text-align="left">
+			<sub>Attribute:</sub></br><input type='text'  name='attribute@' value='' /><br/>
+			<sub>Measure:</sub></br><input type='text' name='measure@' value='' /><br/>
+			<sub>Dataset:</sub></br><input type='text' name='dataset@' value='' />			
+		</a>
+		
+	</div>
+</div>
+<script type="text/javascript">
+		
+    $(document).ready(function(){
+		
+	$(':checkbox').click( function()
+	{
+		var _class=$(this).attr('class');
+		var _value=$(this).val();
+		var _id=$(this).attr('name');
+		var isChecked=$(this).is(':checked');
+		//alert("Inside dimension _class.: "+_class+ " _value.: "+ _value + " _id.: "+ _id +" isChecked.:"+isChecked);		
+		//dimension table was checked and it's should be add in mapping
+		if(_class=="dimension_table" && isChecked==true){
+			
+		}
+		//dimension table was unchecked and it's should be remove in mapping
+		else if(_class=="dimension_table" && isChecked==false){
+			
+		}else if(_class=="dimension_attribute" && isChecked==true){
+			
+		}else if(_class=="dimension_attribute" && isChecked==false){
+			
+		}
+		
+	} );
+				
+	$(':checkbox').live('click',function(){  
+		var _class=$(this).attr('class');
+		var _value=$(this).val();
+		var isChecked=$(this).is(':checked');
+		//alert("_class.: "+_class+ " _value.: "+ _value +" isChecked.:"+isChecked);	
+	});
+	
+	/*
+	* EXTRACT BTN
+	*/
+	$('#extract').click(function () {
+		var json=$.toJSON(mapping);
+		//alert(json);
+		var url = window.location.href + '/mapping';
+		$.post(url,{mapping: json},function(data){
+			var div_str = data;				
+			$('#div_preview').html( div_str);							
+		});
+	});
+	$('#preview').click(function () {
+		
+	});
+	$('#reset').click(function () {
+		alert('reset');
+	});  	
+    })
+
+
+</script>
+
+<table border="1" class="separated-vertical" >
+<tr>
+<th>Table</th>
+<th>Dimension</th>
+<th>Attribute</th>
+<th>Measure Type</th>
+<th>Dataset</th>
+</tr>
+<?php
+	$dimensions_array = $this->dimensions;
+	
+	//print_r($dimensions_array);
+
+	for($c = 0; $c<count($dimensions_array); $c++)
+	{	
+		$table=$dimensions_array[$c][1];
+		$key=$dimensions_array[$c][2];
+		$referenced_table=$dimensions_array[$c][4];	
+		$referenced_key=$dimensions_array[$c][5];
+		$id_dimension_unique=$table."_".$key."_".$referenced_table;
+		echo ("<tr><td>$referenced_table</td>");
+
+		echo "<td><input type='checkbox' name='$key@$referenced_table' value='$key@$referenced_table@$referenced_key' onclick='$(\"#dimension_".$key."_".$id_dimension_unique."\").toggle()' class='dimension_table'/><br/>";
+		echo "<div id='dimension_".$key."_".$id_dimension_unique."' style='display:none;
+			border: 1px dotted #ababab;
+			background-color: #bcbcbc;
+			padding-left: 10px;
+			margin-left:10%;
+			margin-right: 10%' >";
+		echo "<sub>Dimension Name:</sub></br><input type='text' name='dimension_label@$referenced_table' value='$referenced_table' size='width:100%'></input></br>	
+		      <sub>subPropertyOf:</sub></br><input type='text' name='subPropertyOf@$referenced_table' value='' size='width:100%' ></input></br>
+		      <sub>concept:</sub></br><input type='text' name='concept@$referenced_table' value='' size='width:100%'></input></br>
+		 	<sub>Dimension Data:</sub></br>";			
+		$auxC=$c;
+		while(isset($dimensions_array[$c][4]) && $referenced_table==$dimensions_array[$c][4]){
+			$array_referenced_key=$dimensions_array[$c][6];								
+			for($x = 0; $x<count($array_referenced_key); $x++)
+			{
+				$referenced_column=$array_referenced_key[$x][0];				
+				$referenced_type=$array_referenced_key[$x][1];	
+				$id_attribute_dimension_unique=$id_dimension_unique."_".$referenced_column;
+				echo "<input type='checkbox' name='$referenced_column' value='$referenced_table@$referenced_column' class='dimension_column'/>$referenced_column - $referenced_type<br>"; 				
+											
+			}			
+			$c=$c+1;
+			echo "</div></td>";	
+		}		
+		
+		//Attributes
+		$c=$auxC;
+		while(isset($dimensions_array[$c][4]) && $referenced_table==$dimensions_array[$c][4]){
+			$array_referenced_key=$dimensions_array[$c][6];	
+			echo "<td><input type='checkbox' name='$key@$referenced_table' value='$key@$referenced_table@$referenced_key' onclick='$(\"#attributes_".$key."_".$id_dimension_unique."\").toggle()' class='attribute_table'/><br/>";
+			echo "<div id='attributes_".$key."_".$id_dimension_unique."' style='display:none;
+			border: 1px dotted #ababab;
+			background-color: #bcbcbc;
+			padding-left: 10px;
+			margin-left:10%;
+			margin-right: 10%' >";							
+			for($x = 0; $x<count($array_referenced_key); $x++)
+			{
+				$referenced_column=$array_referenced_key[$x][0];				
+				$referenced_type=$array_referenced_key[$x][1];	
+				$id_attribute_dimension_unique=$id_dimension_unique."_".$referenced_column;
+				echo "<input type='checkbox' name='$referenced_column' value='$referenced_table@$referenced_column' class='attribute_column'/>$referenced_column - $referenced_type<br>"; 				
+											
+			}			
+			$c=$c+1;
+			echo "</div></td>";	
+		}
+		
+		//Measure Type
+		$c=$auxC;
+		while(isset($dimensions_array[$c][4]) && $referenced_table==$dimensions_array[$c][4]){
+			$array_referenced_key=$dimensions_array[$c][6];	
+			echo "<td><input type='checkbox' name='$key@$referenced_table' value='$key@$referenced_table@$referenced_key' onclick='$(\"#measure_".$key."_".$id_dimension_unique."\").toggle()' class='measure_table'/><br/>";
+			echo "<div id='measure_".$key."_".$id_dimension_unique."' style='display:none;
+			border: 1px dotted #ababab;
+			background-color: #bcbcbc;
+			padding-left: 10px;
+			margin-left:10%;
+			margin-right: 10%' >";							
+			for($x = 0; $x<count($array_referenced_key); $x++)
+			{
+				$referenced_column=$array_referenced_key[$x][0];				
+				$referenced_type=$array_referenced_key[$x][1];	
+				$id_attribute_dimension_unique=$id_dimension_unique."_".$referenced_column;
+				echo "<input type='checkbox' name='$referenced_column' value='$referenced_table@$referenced_column' class='measure_column'/>$referenced_column - $referenced_type<br>"; 				
+											
+			}			
+			$c=$c+1;
+			echo "</div></td>";	
+		}
+		
+		//Dataset
+		$c=$auxC;
+		while(isset($dimensions_array[$c][4]) && $referenced_table==$dimensions_array[$c][4]){
+			$array_referenced_key=$dimensions_array[$c][6];	
+			echo "<td><input type='checkbox' name='$key@$referenced_table' value='$key@$referenced_table@$referenced_key' onclick='$(\"#dataset_".$key."_".$id_dimension_unique."\").toggle()' class='dataset_table'/><br/>";
+			echo "<div id='dataset_".$key."_".$id_dimension_unique."' style='display:none;
+			border: 1px dotted #ababab;
+			background-color: #bcbcbc;
+			padding-left: 10px;
+			margin-left:10%;
+			margin-right: 10%' >";							
+			for($x = 0; $x<count($array_referenced_key); $x++)
+			{
+				$referenced_column=$array_referenced_key[$x][0];				
+				$referenced_type=$array_referenced_key[$x][1];	
+				$id_attribute_dimension_unique=$id_dimension_unique."_".$referenced_column;
+				echo "<input type='checkbox' name='$referenced_column' value='$referenced_table@$referenced_column' class='dataset_column'/>$referenced_column - $referenced_type<br>"; 				
+											
+			}			
+			$c=$c+1;
+			echo "</div></td>";	
+		}
+		$c=$c-1;
+		echo "</tr>";		
+	}
+?>
+</table> 

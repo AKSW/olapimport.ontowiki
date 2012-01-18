@@ -1,0 +1,56 @@
+<script type="text/javascript" src="<?php echo $this->script ?>"></script>
+<div><?php echo $this->_('Base URI:') ?><input type="text" id="uribase" value="<?php echo $this->modelUri ?>" style="width:80%;" readonly="readonly" ></div>
+<?php
+	$attributes_array = $this->attributes;
+	
+?>
+<div id="database">
+	
+	<div id="cubes" >
+		<label><b>Suggestions</b></label><br>
+		<div id="facts" style="float:left; overflow: auto; height: 200px; width:100%;  ">
+			<table border="1" class="separated-vertical" style="width:100%; ">
+			<tr bgcolor="#2E9AFE">
+				<th>Facts</th>				
+			</tr>	
+<?php
+$maybe_dimensions=false;
+for($c = 0; $c<count($attributes_array); $c++)
+{			       
+	$table=$attributes_array[$c][4];
+
+	if($attributes_array[$c][5]==0 && $maybe_dimensions==false){
+		echo "<tr bgcolor='#FA5858' ><th>Dimensions</th></tr>";
+		$maybe_dimensions=true;
+	}	
+	echo "<tr><td><input type='checkbox' name='$table' value='$table' onclick='$(\"#cubes_".$table."_measures\").toggle()' class='fact_table'/>$table<br/>";
+	echo "<div id='cubes_".$table."_measures' style='display: none; 
+		border: 1px solid #B22222;
+		padding-top:5px;
+		padding-left:5px;
+		margin-left: 5px;' >";
+	while(isset($attributes_array[$c][4]) && $table==$attributes_array[$c][4]){
+		$attribute=$attributes_array[$c][0];				
+		echo "<input type='checkbox' name='".$table."@".$attribute."' value='".$table."@".$attribute."' class='fact_measure'/>$attribute<br>"; 							
+		$c=$c+1;			
+	}
+	echo "</div></td></tr>";
+	$c=$c-1;
+}
+?>	
+	
+</table>
+		</div>
+		<div id="dimensions" style="float:left; height: 400px; width:100%;">
+			<div id="div_mapping" style="float:left; overflow: auto;  width:100%; ">		
+			</div>
+			<div id="div_preview" style="float:left; overflow: auto;  width:100%; ">		
+			</div>			
+		</div>	
+	</div>
+
+</div>
+
+
+
+
